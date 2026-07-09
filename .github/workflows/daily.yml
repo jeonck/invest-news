@@ -1,0 +1,107 @@
+name: Daily Insights
+
+on:
+  schedule:
+    - cron: "0 22 * * *" # UTC 22:00 = KST 07:00
+  workflow_dispatch:
+  push: # 완료 처리 등 사이트 변경 푸시 시 배포만 즉시 수행 (수집·판정은 스킵)
+    branches: [main]
+    paths:
+      - "content/**"
+      - "layouts/**"
+      - "archetypes/**"
+      - "hugo.toml"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-insights
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    # push 이벤트는 배포 전용 — 수집·판정 스킵
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pipeline/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r pipeline/requirements.txt
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Collect & judge
+        id: judge
+        # 치명 오류(크레딧 부족 등)로 중단돼도 그 전까지의 성공분은 커밋되도록
+        continue-on-error: true
+        env:
+          # CLAUDE_CODE_OAUTH_TOKEN 등록 시 구독 인증(claude-code), 없으면 API 키 과금(api)
+          JUDGE_BACKEND: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' && 'claude-code' || 'api' }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python pipeline/collect.py
+
+      - name: Commit new insights
+        id: commit
+        run: |
+          git config user.name "insight-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add content/insights pipeline/processed.json
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "신규 항목 없음 — 커밋 스킵"
+          else
+            git commit -m "chore: daily insights $(date -u +%F)"
+            git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Surface judge failure
+        if: steps.judge.outcome == 'failure'
+        run: |
+          echo "::error::판정 단계 실패 (크레딧/API 키 확인 필요) — 성공분은 커밋됨"
+          exit 1
+
+  deploy:
+    needs: collect
+    # 스케줄: 신규 항목 있을 때만 / 수동·push: 항상 배포 (collect 실패·스킵 시에도 동작)
+    if: ${{ !cancelled() && (needs.collect.outputs.changed == 'true' || github.event_name == 'workflow_dispatch' || github.event_name == 'push') }}
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main # collect 잡이 방금 푸시한 커밋 포함
+
+      - uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "0.147.9"
+          extended: true
+
+      - name: Build site
+        run: hugo --minify
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+      - id: deployment
+        uses: actions/deploy-pages@v4

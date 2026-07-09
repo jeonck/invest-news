@@ -1,0 +1,4 @@
+{{ define "main" }}
+<h2 class="sec">{{ .Data.Singular }}: {{ .Title }} · {{ len .Pages }}건</h2>
+{{ range .Pages.ByDate.Reverse }}{{ partial "card.html" . }}{{ else }}<p class="empty">아직 항목 없음</p>{{ end }}
+{{ end }}

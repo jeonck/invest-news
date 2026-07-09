@@ -1,0 +1,20 @@
+{{ define "main" }}
+{{ $insights := where site.RegularPages "Section" "insights" }}
+{{ $pending := where $insights "Params.status" "대기" }}
+
+<h2 class="sec">🔥 즉시조치 · 대기</h2>
+{{ $urgent := where $pending "Params.verdict" "즉시조치" }}
+{{ range $urgent.ByDate.Reverse }}{{ partial "card.html" . }}{{ else }}<p class="empty">대기 중인 즉시조치 항목 없음 — 좋은 상태입니다.</p>{{ end }}
+
+<h2 class="sec">📌 백로그 · 대기</h2>
+{{ $backlog := where $pending "Params.verdict" "백로그" }}
+{{ range first 20 $backlog.ByDate.Reverse }}{{ partial "card.html" . }}{{ else }}<p class="empty">항목 없음</p>{{ end }}
+
+<h2 class="sec">📚 학습 · 대기</h2>
+{{ $study := where $pending "Params.verdict" "학습" }}
+{{ range first 20 $study.ByDate.Reverse }}{{ partial "card.html" . }}{{ else }}<p class="empty">항목 없음</p>{{ end }}
+
+<h2 class="sec">✅ 최근 완료</h2>
+{{ $done := where $insights "Params.status" "완료" }}
+{{ range first 10 $done.ByDate.Reverse }}{{ partial "card.html" . }}{{ else }}<p class="empty">항목 없음</p>{{ end }}
+{{ end }}

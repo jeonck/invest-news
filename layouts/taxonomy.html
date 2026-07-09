@@ -1,0 +1,6 @@
+{{ define "main" }}
+<h2 class="sec">{{ .Title }}</h2>
+{{ range .Data.Terms.Alphabetical }}
+<div class="card"><a href="{{ .Page.RelPermalink }}">{{ .Page.Title }}</a> <span class="meta">({{ .Count }})</span></div>
+{{ end }}
+{{ end }}

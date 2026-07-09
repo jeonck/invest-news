@@ -1,0 +1,19 @@
+baseURL = "https://jeonck.github.io/invest-news/"
+languageCode = "ko-kr"
+title = "투자 뉴스 인사이트"
+timeZone = "Asia/Seoul"
+enableRobotsTXT = true
+
+# 자체 레이아웃만 사용 — 외부 테마 의존 없음
+
+[taxonomies]
+# 단수=복수 동일하게 두어 front matter 키(verdict:, status:)를 그대로 taxonomy로 사용
+verdict = "verdict"
+status = "status"
+tag = "tags"
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[pagination]
+pagerSize = 50

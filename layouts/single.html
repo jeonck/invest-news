@@ -1,0 +1,15 @@
+{{ define "main" }}
+<article class="single">
+  <div class="top">
+    <span class="badge {{ .Params.verdict }}">{{ .Params.verdict }}</span>
+    <span class="badge status{{ .Params.status }}">{{ .Params.status }}</span>
+  </div>
+  <h1>{{ .Title }}</h1>
+  <div class="meta">
+    {{ .Date.Format "2006-01-02 15:04" }} · {{ .Params.source_name }} ·
+    <a href="{{ .Params.source }}" target="_blank" rel="noopener">원문 보기 ↗</a>
+    <span class="tags">{{ range .Params.tags }}<a href="{{ printf "tags/%s/" (urlize .) | relURL }}">#{{ . }}</a>{{ end }}</span>
+  </div>
+  <div class="content">{{ .Content }}</div>
+</article>
+{{ end }}

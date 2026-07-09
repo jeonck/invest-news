@@ -1,0 +1,35 @@
+# 수집 소스 정의 — context.md의 관심사(미국 빅테크/AI 종목, 거시경제/금리, 증시 전반)에 맞춤
+# URL은 2026-07-09 기준 HTTP 200 확인됨
+
+rss:
+  - name: "한국경제 경제"
+    url: "https://www.hankyung.com/feed/economy"
+  - name: "연합뉴스 경제"
+    url: "https://www.yna.co.kr/rss/economy.xml"
+  - name: "CNBC Top News & Analysis"
+    url: "https://www.cnbc.com/id/10001147/device/rss/rss.html"
+  - name: "Investing.com Stock Market News"
+    url: "https://www.investing.com/rss/news_25.rss"
+  - name: "WSJ Markets"
+    url: "https://feeds.content.dowjones.io/public/rss/RSSMarketsMain"
+  - name: "MarketWatch Top Stories"
+    url: "https://feeds.content.dowjones.io/public/rss/mw_topstories"
+
+reddit:
+  - subreddit: "investing"
+    listing: "top"
+    t: "day"
+    min_score: 50
+  - subreddit: "stocks"
+    listing: "top"
+    t: "day"
+    min_score: 50
+
+hackernews:
+  # hnrss.org 사용: https://hnrss.org/newest?q=QUERY&points=N
+  - query: "federal reserve"
+    min_points: 50
+  - query: "nvidia"
+    min_points: 80
+  - query: "stock market"
+    min_points: 80

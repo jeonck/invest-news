@@ -1,0 +1,4 @@
+{{ define "main" }}
+<h2 class="sec">{{ .Title }} · {{ len .RegularPages }}건</h2>
+{{ range .RegularPages.ByDate.Reverse }}{{ partial "card.html" . }}{{ end }}
+{{ end }}
