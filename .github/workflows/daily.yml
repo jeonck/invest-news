@@ -2,7 +2,7 @@ name: Daily Insights
 
 on:
   schedule:
-    - cron: "0 22 * * *" # UTC 22:00 = KST 07:00
+    - cron: "21 22 * * *" # UTC 22:21 = KST 07:21 (다른 프로젝트와 겹침 방지로 분산)
   workflow_dispatch:
   push: # 완료 처리 등 사이트 변경 푸시 시 배포만 즉시 수행 (수집·판정은 스킵)
     branches: [main]
